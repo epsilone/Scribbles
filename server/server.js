@@ -5,15 +5,12 @@ var port = "49568";
 var user = "ubi_user";
 var pwd = "Ubisoft123";
 
-var scribbles = [];
-
 var db_url = "mongodb://"+user+":"+pwd+"@"+ host + ":" + port + "/ubi_test";
 
 
 // db connection:
 var express = require('express'),
   mongoskin = require('mongoskin'),
-  routes = require('routes'),
   app = express();
 
 app.use(express.bodyParser());
@@ -99,7 +96,6 @@ app.post('/scribble/vote', function(req, res, next) {
           update = {"$inc": {"score" : -1}, "$addToSet": {"downvote" : req.body.user}};
         }
         scribbleCollection.findAndModify({"_id": scribbleCollection.id(req.body.id)}, [], update, {new:true}, function(e, results) {
-          debugger;
           if (e) return next(e);
           res.send(results, 200);
         });
@@ -113,7 +109,6 @@ app.post('/scribble/vote', function(req, res, next) {
  * Login part
  */
 var crypto = require('crypto');
-var md5sum = crypto.createHash('md5');
 
 app.post('/attempt_register', function (req, res, next) {
   var user = {};
@@ -130,8 +125,7 @@ app.post('/attempt_register', function (req, res, next) {
 
 app.post('/attempt_login', function (req, res, next) {
   userCollection.findOne({"user": req.body.username}, function(e, result) {
-    if (result == null) return next();
-    debugger
+    if (result === null) return next();
     var hash = crypto.createHash('md5').update(result.password + req.body.timestamp).digest("hex");
     var clientHash = crypto.createHash('md5').update(req.body.password).digest("hex");
     if (hash == clientHash) {
